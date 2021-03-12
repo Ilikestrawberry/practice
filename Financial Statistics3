@@ -1,0 +1,109 @@
+rm(list=ls())
+library(dplyr)
+df = read.csv("/cloud/project/99_project/01_association_rule/Groceries_dataset.csv")
+n_df <- nrow(df)
+
+items <- nrow(as.matrix(df %>% distinct(itemDescription))) ## 전체 상품 개수
+shopping <- nrow((df %>% distinct(Member_number,Date))) ## 쇼핑 한 횟수
+part_df <- (df %>% distinct(Member_number,Date)) ## 쇼핑한 id와 날짜
+matdf <- data.frame(matrix(0,shopping,items)) ## 각 쇼핑마다 구매한 물품 목록 df
+colnames(matdf) <- c(as.vector(as.matrix(df %>% distinct(itemDescription)))) ## 상품 명단
+newdf <- cbind(part_df, matdf) ## matdf 왼쪽에 id와 날짜열 합침
+
+for(i in 1:n_df){
+  newdf[rownames(subset(newdf, Member_number == df[i,1] & Date == df[i,2])), df[i,3]] <- 1
+} ## newdf에 구입한 제품은 1로 값을 변경해줌. (굉장히 오래걸림)
+
+
+
+## Lift df 만들기
+
+liftmat <- matrix(NA, nrow=items, ncol=items)
+
+for (i in 1:items) {
+  x <- sum(newdf[,i+2])
+  for (j in 1:items){
+    y <- sum(newdf[,j+2])
+    if (i == j){
+    }
+    else{
+      xy <- nrow(newdf[newdf[,i+2] == 1 & newdf[,j+2] == 1,])                      
+      lift_xy <- (xy*shopping)/(x*y)
+      liftmat[i,j] <- lift_xy
+    }
+  }
+} ## items*items matrix형태로 Lift 계산
+## P(x,y) = P(y,x)
+
+lift_df <- data.frame(liftmat)
+colnames(lift_df) <- c(as.vector(as.matrix(df %>% distinct(itemDescription))))
+rownames(lift_df) <- c(as.vector(as.matrix(df %>% distinct(itemDescription))))
+
+setwd("/cloud/project/99_project/01_association_rule/")
+write.csv(lift_df,file="Lift.csv") ## Lift df csv 생성
+
+Lift = read.csv("/cloud/project/99_project/01_association_rule/Lift.csv")
+View(Lift)
+
+
+
+## Conditional Probability(Confidence) df 만들기
+
+conditionProb <- matrix(NA, nrow=items, ncol=items)
+
+for (i in 1:items) {
+  x <- sum(newdf[,i+2])
+  for (j in 1:items){
+    y <- sum(newdf[,j+2])
+    if (i == j){
+    }
+    else{
+      xy <- nrow(newdf[newdf[,i+2] == 1 & newdf[,j+2] == 1,])
+      condition_xy <- xy/x
+      conditionProb[i,j] <- condition_xy
+    }
+  }
+} ## items*items matrix형태로 Conditional Probability 계산
+## """P( COL | ROW )"""
+
+conditionProb_df <- data.frame(conditionProb)
+colnames(conditionProb_df) <- c(as.vector(as.matrix(df %>% distinct(itemDescription))))
+rownames(conditionProb_df) <- c(as.vector(as.matrix(df %>% distinct(itemDescription))))
+
+setwd("/cloud/project/99_project/01_association_rule/")
+write.csv(conditionProb_df,file="Confidence.csv") ## Confidence df csv 생성
+
+Confidence = read.csv("/cloud/project/99_project/01_association_rule/Confidence.csv")
+View(Confidence)
+
+
+
+## Support df 만들기
+
+supportmat <- matrix(NA, nrow=items, ncol=items)
+
+for (i in 1:items) {
+  for (j in 1:items){
+    if (i == j){
+    }
+    else{
+      xy <- nrow(newdf[newdf[,i+2] == 1 & newdf[,j+2] == 1,])
+      support_xy <- xy/shopping
+      supportmat[i,j] <- support_xy
+    }
+  }
+} ## items*items matrix형태로 support 계산
+## P(x,y) = P(y,x)
+
+xy <- nrow(newdf[newdf[,3] == 1 & newdf[,4] == 1,])
+xy <- nrow(newdf[newdf[,4] == 1 & newdf[,3] == 1,])
+
+support_df <- data.frame(supportmat)
+colnames(support_df) <- c(as.vector(as.matrix(df %>% distinct(itemDescription))))
+rownames(support_df) <- c(as.vector(as.matrix(df %>% distinct(itemDescription))))
+
+setwd("/cloud/project/99_project/01_association_rule/")
+write.csv(support_df,file="Support.csv") ## Support df csv 생성
+
+Support = read.csv("/cloud/project/99_project/01_association_rule/Support.csv")
+View(Support)
