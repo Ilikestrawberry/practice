@@ -1,0 +1,75 @@
+alpha=[0 for _ in range(26)]
+a = "happy"
+a[-1]
+print(ord(a[2])-97)
+
+##
+
+n = int(input())
+count = 0
+
+for i in range(n):
+    lst_a = []
+    a = input()
+
+    for j in range(len(a)):
+        try:
+            if a[j] != a[j+1]:
+                lst_a.append(a[j])
+        except IndexError:
+            lst_a.append(a[j])
+    
+    if len(lst_a) == len(set(lst_a)):
+        count += 1
+
+print(count)
+
+##
+
+a = "abcdef"
+lst_a = []
+count = 0
+
+##다음거랑 다르면 listup
+
+for i in range(len(a)):
+    try:
+        if a[i] != a[i+1]:
+            lst_a.append(a[i])
+    except IndexError:
+        lst_a.append(a[i])
+
+if len(lst_a) == len(set(lst_a)):
+    count += 1
+
+print(lst_a)
+print(count)
+
+##
+
+a = input()
+cro_alpha = ["c=", "c-", "dz=", "d-", "lj", "nj", "s=", "z="]
+count = 0
+
+for i in range(len(cro_alpha)):
+    count += a.count(cro_alpha[i])
+
+str_n = len(a) - count
+print(str_n)
+
+##
+
+import collections
+
+st = input()
+upper_st = st.upper()
+lst = collections.Counter(upper_st).most_common(2)
+if len(lst) == 1:
+    print(lst[0][0])
+elif lst[0][1] == lst[1][1]:
+    print("?")
+else:
+    print(lst[0][0])
+    
+##
+
